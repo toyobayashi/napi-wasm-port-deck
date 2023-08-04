@@ -2,144 +2,445 @@ import {
   CodeSurfer,
   CodeSurferColumns,
   Step,
-} from "code-surfer";
-import { github, vsDark } from "@code-surfer/themes";
+} from 'code-surfer';
+import { github, vsDark } from '@code-surfer/themes'
+import Logo from './Logo.jsx'
 
-export const theme = vsDark;
+import customTheme from './theme.js'
+export const theme = customTheme
 
-# Hello 👋
+# Node-API for WebAssembly
 
-You are using [MDX Deck](https://github.com/jxnblk/mdx-deck) and [Code Surfer](https://codesurfer.pomb.us)
+<Logo />
 
----
+Toyo Li
 
-<CodeSurfer>
-
-```js title="This is a title" subtitle="and this a subtitle"
-function lorem(ipsum, dolor = 1) {
-  const sit = ipsum == null ? 0 : ipsum.sit;
-  dolor = sit - amet(dolor);
-  return sit
-    ? consectetur(ipsum, 0, dolor < 0 ? 0 : dolor)
-    : [];
-}
-
-function incididunt(ipsum, ut = 1) {
-  ut = labore.et(amet(ut), 0);
-  const sit = ipsum == null ? 0 : ipsum.sit;
-
-  if (!sit || ut < 1) {
-    return [];
-  }
-
-  let dolore = 0;
-  let magna = 0;
-  const aliqua = new eiusmod(labore.ut(sit / ut));
-
-  while (dolore < sit) {
-    aliqua[magna++] = consectetur(
-      ipsum,
-      dolore,
-      (dolore += ut)
-    );
-  }
-
-  return aliqua;
-}
-```
-
-```js
-function lorem(ipsum, dolor = 1) {
-  const sit = ipsum == null ? 0 : ipsum.sit;
-  dolor = sit - amet(dolor);
-  return sit
-    ? consectetur(ipsum, 0, dolor < 0 ? 0 : dolor)
-    : [];
-}
-
-function adipiscing(...elit) {
-  if (!elit.sit) {
-    return [];
-  }
-
-  const sed = elit[0];
-  return eiusmod.tempor(sed) ? sed : [sed];
-}
-
-function incididunt(ipsum, ut = 1) {
-  ut = labore.et(amet(ut), 0);
-  const sit = ipsum == null ? 0 : ipsum.sit;
-
-  if (!sit || ut < 1) {
-    return [];
-  }
-
-  let dolore = 0;
-  let magna = 0;
-  const aliqua = new eiusmod(labore.ut(sit / ut));
-
-  while (dolore < sit) {
-    aliqua[magna++] = consectetur(
-      ipsum,
-      dolore,
-      (dolore += ut)
-    );
-  }
-
-  return aliqua;
-}
-```
-
-```diff 1[10:14],2[15:19],3[22:27],10:12
-
-```
-
-</CodeSurfer>
+https://github.com/toyobayashi
 
 ---
 
-<CodeSurferColumns themes={[vsDark, github]}>
+# WebAssembly Overview
 
-<Step>
+---
 
-```js
-const magna = aliqua => aliqua.ut((enim, ad) => enim, 0);
+<CodeSurferColumns sizes={[1,1]}>
+
+<Step subtitle="写一个递归的斐波那契，左侧是 wat，右侧是等价的 js">
+
+```wasm
+;; src/fib.wat
+
+(module
+)
 ```
 
 ```js
-const minim = (ad, enim) => dolore.magna(ad / enim);
+// fib.js
+```
+
+</Step>
+
+<Step subtitle="定义并导出 fib 函数，i32 形参 $n，返回 i32 类型">
+
+```wasm
+;; src/fib.wat
+
+(module
+  (func $fib (export "fib")
+      (param $n i32) (result i32)
+  )
+)
+```
+
+```js
+// fib.js
+
+export function fib (n) {
+
+}
+```
+
+</Step>
+
+<Step subtitle="$n 入栈，2 入栈，出栈两个元素进行有符号小于比较，比较结果入栈，if 出栈比较结果，如果为真，返回 $n">
+
+```wasm
+;; src/fib.wat
+
+(module
+  (func $fib (export "fib")
+      (param $n i32) (result i32)
+    local.get $n
+    i32.const 2
+    i32.lt_s
+    if
+      local.get $n
+      return
+    end
+  )
+)
+```
+
+```js
+// fib.js
+
+export function fib (n) {
+  if (n < 2) return n
+}
+```
+
+</Step>
+
+<Step subtitle="$fib 函数顶部声明 $tmp，$n 入栈，1 入栈，出栈两个元素进行减法计算，计算结果入栈，调用 $fib 出栈计算结果，返回值入栈，返回值出栈存入 $tmp">
+
+```wasm
+;; src/fib.wat
+
+(module
+  (func $fib (export "fib")
+      (param $n i32) (result i32)
+    (local $tmp i32)
+
+    local.get $n
+    i32.const 2
+    i32.lt_s
+    if
+      local.get $n
+      return
+    end
+
+    local.get $n
+    i32.const 1
+    i32.sub
+    call $fib
+    local.set $tmp
+  )
+)
+```
+
+```js 5[10:19]
+// fib.js
+
+export function fib (n) {
+  if (n < 2) return n
+  return fib(n - 1) + fib(n - 2)
+}
+```
+
+</Step>
+
+<Step subtitle="$n 入栈，2 入栈，出栈两个元素进行减法计算，计算结果入栈，调用 $fib 出栈计算结果，返回值入栈">
+
+```wasm
+;; src/fib.wat
+
+(module
+  (func $fib (export "fib")
+      (param $n i32) (result i32)
+    (local $tmp i32)
+
+    local.get $n
+    i32.const 2
+    i32.lt_s
+    if
+      local.get $n
+      return
+    end
+
+    local.get $n
+    i32.const 1
+    i32.sub
+    call $fib
+    local.set $tmp
+
+    local.get $n
+    i32.const 2
+    i32.sub
+    call $fib
+  )
+)
+```
+
+```js 5[23:32]
+// fib.js
+
+export function fib (n) {
+  if (n < 2) return n
+  return fib(n - 1) + fib(n - 2)
+}
+```
+</Step>
+
+<Step subtitle="$tmp 再入栈">
+
+```wasm
+;; src/fib.wat
+
+(module
+  (func $fib (export "fib")
+      (param $n i32) (result i32)
+    (local $tmp i32)
+
+    local.get $n
+    i32.const 2
+    i32.lt_s
+    if
+      local.get $n
+      return
+    end
+
+    local.get $n
+    i32.const 1
+    i32.sub
+    call $fib
+    local.set $tmp
+
+    local.get $n
+    i32.const 2
+    i32.sub
+    call $fib
+    local.get $tmp
+  )
+)
+```
+
+```js 5[10:19,23:32]
+// fib.js
+
+export function fib (n) {
+  if (n < 2) return n
+  return fib(n - 1) + fib(n - 2)
+}
+```
+
+</Step>
+
+<Step subtitle="出栈两个元素进行加法计算，计算结果入栈再出栈返回">
+
+```wasm
+;; src/fib.wat
+
+(module
+  (func $fib (export "fib")
+      (param $n i32) (result i32)
+    (local $tmp i32)
+
+    local.get $n
+    i32.const 2
+    i32.lt_s
+    if
+      local.get $n
+      return
+    end
+
+    local.get $n
+    i32.const 1
+    i32.sub
+    call $fib
+    local.set $tmp
+
+    local.get $n
+    i32.const 2
+    i32.sub
+    call $fib
+    local.get $tmp
+    i32.add
+    return
+  )
+)
+```
+
+```js 5[2:8,21]
+// fib.js
+
+export function fib (n) {
+  if (n < 2) return n
+  return fib(n - 1) + fib(n - 2)
+}
 ```
 
 </Step>
 
 <Step>
 
-```js
-const lorem = (ipsum, dolor, sit) => {
-  const amet = dolor - ipsum;
-  return consectetur.adipiscing(
-    {
-      elit: sed.eiusmod(sit - dolor) / amet + 2,
-    },
-    (tempor, incididunt) => ipsum + amet * incididunt
-  );
-};
+```diff
+```
 
-const magna = aliqua => aliqua.ut((enim, ad) => enim, 0);
+```diff
+```
+
+</Step>
+
+<Step subtitle="从宿主环境提供的 env 模块中导入 print 函数">
+
+```wasm
+;; src/fib.wat
+
+(module
+  (import "env" "print"
+    (func $print (param i32)))
+  (func $fib (export "fib")
+      (param $n i32) (result i32)
+    (local $tmp i32)
+
+    local.get $n
+    i32.const 2
+    i32.lt_s
+    if
+      local.get $n
+      return
+    end
+
+    local.get $n
+    i32.const 1
+    i32.sub
+    call $fib
+    local.set $tmp
+
+    local.get $n
+    i32.const 2
+    i32.sub
+    call $fib
+    local.get $tmp
+    i32.add
+    return
+  )
+)
 ```
 
 ```js
-const minim = (ad, enim) => dolore.magna(ad / enim);
+// fib.js
 
-const sed = (eiusmod, tempor, incididunt) => {
-  const ut = tempor - eiusmod;
-  return labore.et(
+import { print } from 'env'
+
+export function fib (n) {
+  if (n < 2) return n
+  return fib(n - 1) + fib(n - 2)
+}
+```
+
+</Step>
+
+<Step subtitle="再导出一个 calc_fib_then_print 函数，接收 i32 的参数作为 fib 的入参，打印并返回结果">
+
+```wasm
+;; src/fib.wat
+
+(module
+  (import "env" "print"
+    (func $print (param i32)))
+  (func $fib (export "fib")
+      (param $n i32) (result i32)
+    (local $tmp i32)
+
+    local.get $n
+    i32.const 2
+    i32.lt_s
+    if
+      local.get $n
+      return
+    end
+
+    local.get $n
+    i32.const 1
+    i32.sub
+    call $fib
+    local.set $tmp
+
+    local.get $n
+    i32.const 2
+    i32.sub
+    call $fib
+    local.get $tmp
+    i32.add
+    return
+  )
+  (func $calc_fib_then_print
+      (export "calc_fib_then_print")
+      (result i32)
+    (local $tmp i32)
+    i32.const 10
+    call $fib
+    local.tee $tmp
+    call $print
+    local.get $tmp
+    return
+  )
+)
+```
+
+```js
+// fib.js
+
+import { print } from 'env'
+
+export function fib (n) {
+  if (n < 2) return n
+  return fib(n - 1) + fib(n - 2)
+}
+
+export function calc_fib_then_print () {
+  let tmp = fib(10)
+  print(tmp)
+  return tmp
+}
+```
+
+</Step>
+
+<Step subtitle="从 JS 中实例化 wasm 模块并调用导出的函数">
+
+```diff
+```
+
+```js
+// fib.js
+
+import { print } from 'env'
+
+export function fib (n) {
+  if (n < 2) return n
+  return fib(n - 1) + fib(n - 2)
+}
+
+export function calc_fib_then_print () {
+  let tmp = fib(10)
+  print(tmp)
+  return tmp
+}
+
+// main.mjs
+
+async function main() {
+  let buffer
+  const url = new URL('./fib.wasm', import.meta.url)
+  if (typeof window !== 'undefined') {
+    const response = await fetch(url)
+    buffer = await response.arrayBuffer()
+  } else {
+    const { readFile } = await import('fs/promises')
+    buffer = await readFile(url)
+  }
+  const { instance } = await WebAssembly.instantiate(
+    buffer,
     {
-      amet: dolore.magna(incididunt - tempor) / ut + 2,
-    },
-    (aliqua, elit) => eiusmod + ut * elit
-  );
-};
+      env: {
+        print (i32) {
+          console.log(i32)
+        }
+      }
+    }
+  )
+  const {
+    fib, calc_fib_then_print
+  } = instance.exports
+  const a = fib(10)
+  const b = calc_fib_then_print(10)
+  console.log(a === b)
+  console.log(`log result from JS: ${a}`)
+}
+
+main()
 ```
 
 </Step>
@@ -148,5 +449,42 @@ const sed = (eiusmod, tempor, incididunt) => {
 
 ---
 
-docs:  
-[codesurfer.pomb.us](https://codesurfer.pomb.us)
+<CodeSurferColumns>
+
+<Step subtitle="手写 wat 难度较大，我们一般会使用更高级语言编译到 wasm，比如 LLVM 作为编译后端的 C 语言">
+
+```wasm file="./src/fib.wat"
+```
+
+```c file="./src/fib.c"
+```
+
+</Step>
+
+<Step subtitle="写 C 维护更简单了，但还有一个问题，如何让 JS 的数据类型能和 C 语言的类型互操作？">
+
+```diff
+```
+
+```diff
+```
+
+</Step>
+
+<Step subtitle="wasm 和 C 只能接收数字作为参数或返回数字（指针也是数字），如果想在 C 中接收 JS 的对象或者调用 JS 传过来的回调函数呢？如果想从 C 中直接返回 JS 对象要怎么做到呢？来看看 Node.js 在原生模块中是怎么做的">
+
+```diff
+```
+
+```diff
+```
+
+</Step>
+
+</CodeSurferColumns>
+
+---
+
+# Node-API Overview
+
+Interop between C and JavaScript in Node.js native modules

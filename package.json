@@ -3,12 +3,16 @@
   "version": "1.0.0",
   "scripts": {
     "start": "mdx-deck deck.mdx",
-    "build": "mdx-deck build deck.mdx",
-    "test": "echo \"there are no tests\""
+    "build": "mdx-deck build deck.mdx"
   },
   "devDependencies": {
-    "code-surfer": "3.1.0",
-    "mdx-deck": "3.0.13"
+    "code-surfer": "3.1.1",
+    "emnapi": "^0.41.0",
+    "mdx-deck": "3.0.10"
   },
-  "name": "napi-wasm-port-deck"
+  "name": "napi-wasm-port-deck",
+  "dependencies": {
+    "@emnapi/core": "^0.41.0",
+    "@emnapi/runtime": "^0.41.0"
+  }
 }

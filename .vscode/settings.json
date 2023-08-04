@@ -1,0 +1,6 @@
+{
+  "files.associations": {
+    "node_api.h": "c",
+    "js_native_api.h": "c"
+  }
+}
