@@ -3,11 +3,17 @@
 set -e
 
 wat2wasm -o ./src/fib.wasm ./src/fib.wat
+wat2wasm -o ./src/str.wasm ./src/str.wat
 
 clang -O3 -o ./src/fib_c.wasm \
       --target=wasm32-unknown-unknown \
       -nostdlib ./src/fib.c \
       -Wl,--import-undefined,--export-dynamic,--no-entry
+
+clang -O3 -o ./src/str_c.wasm \
+      --target=wasm32-unknown-unknown \
+      -nostdlib ./src/str.c \
+      -Wl,--import-undefined,--export-table,--export-memory,--export-dynamic,--no-entry
 
 __dirname=$(cd `dirname $0`;pwd)
 

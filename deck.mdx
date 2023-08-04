@@ -459,6 +459,22 @@ main()
 ```c file="./src/fib.c"
 ```
 
+```js file="./src/fib.mjs"
+```
+
+</Step>
+
+<Step subtitle="再看个例子：memory 和 table">
+
+```wasm file="./src/str.wat"
+```
+
+```c file="./src/str.c"
+```
+
+```js file="./src/str.mjs"
+```
+
 </Step>
 
 <Step subtitle="写 C 维护更简单了，但还有一个问题，如何让 JS 的数据类型能和 C 语言的类型互操作？">
@@ -469,9 +485,15 @@ main()
 ```diff
 ```
 
+```diff
+```
+
 </Step>
 
 <Step subtitle="wasm 和 C 只能接收数字作为参数或返回数字（指针也是数字），如果想在 C 中接收 JS 的对象或者调用 JS 传过来的回调函数呢？如果想从 C 中直接返回 JS 对象要怎么做到呢？来看看 Node.js 在原生模块中是怎么做的">
+
+```diff
+```
 
 ```diff
 ```
