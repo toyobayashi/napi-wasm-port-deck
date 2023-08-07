@@ -1,5 +1,29 @@
 #include <node_api.h>
 
+#ifdef __cplusplus
+#define EXTERN_C_MACRO extern "C"
+#else
+#define EXTERN_C_MACRO
+#endif
+
+#ifdef _WIN32
+#define EXPORT __declspec(dllexport)
+#else
+#ifdef __EMSCRIPTEN__
+#define EXPORT \
+  __attribute__((visibility("default"))) \
+  __attribute__((used))
+#else
+#define EXPORT __attribute__((visibility("default")))
+#endif
+#endif
+
+#ifdef __wasm__
+#define EXPORT_REGISTER_SYMBOL_NAME napi_register_wasm_v1
+#else
+#define EXPORT_REGISTER_SYMBOL_NAME napi_register_module_v1
+#endif
+
 #define SAFE_CALL(env, status, msg) \
   do { \
     if ((status) != napi_ok) { \
@@ -10,12 +34,18 @@
 
 static napi_value js_fill_fib_array(
     napi_env env, napi_callback_info info) {
+  // fillFibArray 的绑定的原生函数
   size_t argc = 2; // 最多接收两个参数
   napi_value argv[2]; // 参数数组
 
   SAFE_CALL(env,
     napi_get_cb_info(env, info, &argc, argv, NULL, NULL),
     "napi_get_cb_info failed");
+  
+  if (argc == 0) {
+    napi_throw_error(env, NULL, "Require arguments");
+    return NULL;
+  }
 
   // 校验参数类型
   bool is_arr = false;
@@ -53,7 +83,7 @@ static napi_value js_fill_fib_array(
   for (uint32_t i = 0; i < len; ++i) {
     if (i < 2) {
       SAFE_CALL(env,
-        napi_create_uint32(env, (uint32_t) i, &tmp_el),
+        napi_create_uint32(env, i, &tmp_el),
         "napi_create_uint32 failed");
       SAFE_CALL(env,
         napi_set_element(env, argv[0], i, tmp_el),
@@ -83,27 +113,16 @@ static napi_value js_fill_fib_array(
   return argv[0];
 }
 
-#ifdef __cplusplus
-#define EXTERN_C_MACRO extern "C"
-#else
-#define EXTERN_C_MACRO
-#endif
-
-#ifdef _WIN32
-#define EXPORT __declspec(dllexport)
-#else
-#define EXPORT __attribute__((visibility("default")))
-#endif
-
-#ifdef __wasm__
-#define EXPORT_REGISTER_SYMBOL_NAME napi_register_wasm_v1
-#else
-#define EXPORT_REGISTER_SYMBOL_NAME napi_register_module_v1
-#endif
+EXTERN_C_MACRO EXPORT
+int32_t node_api_module_get_api_version_v1() {
+  // 告诉 Node.js 此模块要用什么版本的 API
+  return 8;
+}
 
 EXTERN_C_MACRO EXPORT
 napi_value EXPORT_REGISTER_SYMBOL_NAME(
     napi_env env, napi_value exports) {
+  // Node.js 加载模块时会调用此函数进行模块初始化
   napi_value fill_fib_array_fn = NULL;
   napi_status r = napi_create_function(env,
     "fillFibArray", NAPI_AUTO_LENGTH,

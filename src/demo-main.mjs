@@ -5,6 +5,18 @@ export function main (moduleExports) {
   console.log(fillFibArray(Array(10), 5))
 
   try {
+    fillFibArray()
+  } catch (err) {
+    console.error(err.message)
+  }
+
+  try {
+    fillFibArray({})
+  } catch (err) {
+    console.error(err.message)
+  }
+
+  try {
     fillFibArray(Array(10), 11)
   } catch (err) {
     console.error(err.message)
