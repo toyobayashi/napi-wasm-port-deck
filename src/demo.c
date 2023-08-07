@@ -23,7 +23,7 @@ static napi_value js_fill_fib_array(
     napi_is_array(env, argv[0], &is_arr),
     "napi_is_array failed");
   if (!is_arr) {
-    napi_throw_type_error(env, NULL,
+    napi_throw_error(env, NULL,
       "arguments[0] is not an array");
     return NULL;
   }
@@ -37,20 +37,11 @@ static napi_value js_fill_fib_array(
   // 获取可选参数指定的填充长度
   uint32_t len = arr_len;
   if (argc == 2) {
-    napi_valuetype arg1_type;
-    SAFE_CALL(env,
-      napi_typeof(env, argv[1], &arg1_type),
-      "napi_typeof failed");
-    if (arg1_type != napi_number) {
-      napi_throw_type_error(env, NULL,
-        "arguments[1] is not number");
-      return NULL;
-    }
     SAFE_CALL(env,
       napi_get_value_uint32(env, argv[1], &len),
       "napi_get_value_uint32 failed");
     if (len > arr_len) {
-      napi_throw_type_error(env, NULL,
+      napi_throw_error(env, NULL,
         "arguments[1] is too big");
     }
   }

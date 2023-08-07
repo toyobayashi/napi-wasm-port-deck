@@ -9,10 +9,4 @@ export function main (moduleExports) {
   } catch (err) {
     console.error(err.message)
   }
-
-  try {
-    fillFibArray(Array(10), {})
-  } catch (err) {
-    console.error(err.message)
-  }
 }
