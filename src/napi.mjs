@@ -1,3 +1,5 @@
+// napi.mjs
+
 export function createNapiModule (ctx) {
   let wasmExports
   let wasmMemory
@@ -244,8 +246,7 @@ export function createNapiModule (ctx) {
           ? exports
           : ctx.handleStore.get(napiValue).value
       })
-    }
-    finally {
+    } finally {
       ctx.closeHandleScope(scope)
     }
     napiModule.loaded = true

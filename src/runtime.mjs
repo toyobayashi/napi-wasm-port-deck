@@ -1,3 +1,5 @@
+// runtime.mjs
+
 export class Store {
   constructor () {
     this.values = [undefined]
@@ -24,6 +26,7 @@ export class Store {
 
   free (id) {
     if (this.values[id] !== undefined) {
+      this.values[id].dispose()
       this.values[id] = undefined
       this.freeList.push(id)
     }
@@ -59,14 +62,6 @@ export class Handle {
 
   dispose() {
     this.value = undefined
-  }
-
-  get(ctx, handle) {
-    return ctx.toHandle(this.value[handle.value])
-  }
-
-  call(ctx, thisArg, args) {
-    return ctx.toHandle(this.value.apply(thisArg.value, args.map(_ => _.value)))
   }
 }
 
@@ -304,17 +299,5 @@ export class RuntimeContext {
     const currentScope = this.currentScope
     currentScope.collect(handle)
     return handle
-  }
-
-  toHandleId(value) {
-    return this.toHandle(value).id
-  }
-
-  getHandle(handleId) {
-    return this.handleStore.get(handleId)
-  }
-
-  fromHandle(handle) {
-    return handle.value
   }
 }

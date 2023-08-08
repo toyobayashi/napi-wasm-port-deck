@@ -1087,3 +1087,222 @@ main()
 ```
 
 </CodeSurfer>
+
+---
+
+<CodeSurfer>
+
+```js subtitle="针对这个例子，尝试实现简化的 node-api 函数" 1:2,7,15:27
+import { RuntimeContext } from './runtime.mjs'
+import { createNapiModule } from './napi.mjs'
+import { main as demoMain } from './demo-main.mjs'
+
+async function main() {
+  let buffer
+  const url = new URL('./demo_pure.wasm', import.meta.url)
+  if (typeof window !== 'undefined') {
+    const response = await fetch(url)
+    buffer = await response.arrayBuffer()
+  } else {
+    const { readFile } = await import('fs/promises')
+    buffer = await readFile(url)
+  }
+  const napiModule = createNapiModule(new RuntimeContext())
+  const { instance, module } = await WebAssembly.instantiate(
+    buffer,
+    {
+      napi: napiModule.imports.napi
+    }
+  )
+  const moduleExports = napiModule.init({
+    instance,
+    module,
+    memory: instance.exports.memory,
+    table: instance.exports.__indirect_function_table
+  })
+
+  demoMain(moduleExports)
+}
+
+main()
+```
+
+</CodeSurfer>
+
+---
+
+<CodeSurferColumns>
+
+<Step subtitle="">
+
+```js file=./src/runtime.mjs
+```
+
+```js file=./src/napi.mjs
+```
+
+</Step>
+
+<Step subtitle="">
+
+```js file=./src/runtime.mjs 1
+```
+
+```js file=./src/napi.mjs 1
+```
+
+</Step>
+
+<Step subtitle="左边是 Runtime 实现，右边只导出 createNapiModule 函数，接收 RuntimeContext 作为入参。声明 wasmExports/wasmMemory/wasmTable 在函数作用域中，等 wasm 实例化后完成以后保存起来以便 node-api 函数形成闭包访问使用">
+
+```js file=./src/runtime.mjs 252
+```
+
+```js file=./src/napi.mjs 3:6
+```
+
+</Step>
+
+<Step subtitle="createNapiModule 返回这样的对象，imports 包括所有需要导入进 wasm 的函数，exports 是模块的导出">
+
+```js file=./src/runtime.mjs 252
+```
+
+```js file=./src/napi.mjs 256:277
+```
+
+</Step>
+
+<Step subtitle="init 函数被设计为在 wasm 实例化完成后调用">
+
+```js file=./src/runtime.mjs 252
+```
+
+```js file=./src/napi.mjs 273
+```
+
+</Step>
+
+<Step subtitle="init 函数第一步保存 wasm 导出的有关对象，第二步创建 Env 调用 napi_register_wasm_v1 进行模块初始化">
+
+```js file=./src/runtime.mjs 252
+```
+
+```js file=./src/napi.mjs 222:254
+```
+
+</Step>
+
+<Step subtitle="为 Node-API 模块创建 Env 对象">
+
+```js file=./src/runtime.mjs 254,268:272
+```
+
+```js file=./src/napi.mjs 236
+```
+
+</Step>
+
+<Step subtitle="Env 对象保存与模块全局相关的信息，比如是否捕获 JS 异常、最后一次 API 调用的状态码 napi_status">
+
+```js file=./src/runtime.mjs 182:211
+```
+
+```js file=./src/napi.mjs 236
+```
+
+</Step>
+
+<Step subtitle="TryCatch 对象用来捕获 JS 的异常">
+
+```js file=./src/runtime.mjs 151:180
+```
+
+```js file=./src/napi.mjs 236
+```
+
+</Step>
+
+<Step subtitle="创建 Env 对象后要为它分配一个 id，用来表示 napi_env 的值，Store 对象用来为不同的 JS 对象类型分配数字类型的 id，这样就和 C 的透明指针对应起来了">
+
+```js file=./src/runtime.mjs 254,270
+```
+
+```js file=./src/napi.mjs 236
+```
+
+</Step>
+
+<Step subtitle="Store 中实现了分配和释放 id 的逻辑。0 在 C 中对应是 NULL 所以用 undefined 占位。如果要映射不同类型的 JS 对象到不同类型的 C 指针，每种类型都需要一个 Store 来进行管理">
+
+```js file=./src/runtime.mjs 3:33
+```
+
+```js file=./src/napi.mjs 236
+```
+
+</Step>
+
+<Step subtitle="Handle 对象为任意的 JS 对象关联 id，id 对应 napi_value 的值">
+
+```js file=./src/runtime.mjs 57:66
+```
+
+```js file=./src/napi.mjs 236
+```
+
+</Step>
+
+<Step subtitle="ConstHandle 表示 undefined null false true global，它们的 id 是唯一的">
+
+```js file=./src/runtime.mjs 68:80
+```
+
+```js file=./src/napi.mjs 236
+```
+
+</Step>
+
+<Step subtitle="HandleStore 是专门针对 napi_value 实现的，因为 napi_value 会频繁分配和释放，这里用对象池来缓存 Handle，避免频繁 new Object">
+
+```js file=./src/runtime.mjs 82:127
+```
+
+```js file=./src/napi.mjs 236
+```
+
+</Step>
+
+<Step subtitle="如果光分配 id 而不释放，Handle 就会一直存在 Store 的数组中，永远不会被 GC，HandleScope 可以批量释放 id。在调用 C 函数之前，由于 C 函数中可能会创建 JS 值，所以要先打开一个 scope，创建的值分配的 id 都放进这个 scope 中，等 C 函数调用完，再关闭这个 scope， scope 中所有的 handle id 可以一起释放">
+
+```js file=./src/runtime.mjs 274:287
+```
+
+```js file=./src/napi.mjs 237:238,249:251
+```
+
+</Step>
+
+<Step subtitle="由于只允许关闭最新创建的 scope，所以 scope 中只记录 handleStore 的起始和结束位置，不必真正存储 handle。关闭 scope 时从 store 的起始位置到结束位置释放 handle，再重置 store 的下一个可分配的 id">
+
+```js file=./src/runtime.mjs 129:149
+```
+
+```js file=./src/napi.mjs 237:238,249:251
+```
+
+</Step>
+
+<Step subtitle="toHandle 就是为任意的 JS 值关联一个 Handle">
+
+```js file=./src/runtime.mjs 289:302
+```
+
+```js file=./src/napi.mjs 240:247
+```
+
+</Step>
+
+</CodeSurferColumns>
+
+---
