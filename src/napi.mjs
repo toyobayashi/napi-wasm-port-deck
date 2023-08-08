@@ -28,19 +28,18 @@ export function createNapiModule (ctx) {
     }
     const name = utf8name ? utf8ToString(utf8name, length) : ''
     const f = function () {
-      ctx.cbinfoStack.push(this, data, arguments, f);
-      const scope = ctx.openHandleScope();
+      ctx.cbinfoStack.push(this, data, arguments, f)
+      const scope = ctx.openHandleScope()
       try {
         return envObject.callIntoModule(function () {
-          const napiValue = (wasmTable.get(cb))(envObject.id, 0);
+          const napiValue = (wasmTable.get(cb))(envObject.id, 0)
           return (!napiValue)
             ? undefined
-            : ctx.handleStore.get(napiValue).value;
-        });
-      }
-      finally {
-        ctx.cbinfoStack.pop();
-        ctx.closeHandleScope(scope);
+            : ctx.handleStore.get(napiValue).value
+        })
+      } finally {
+        ctx.cbinfoStack.pop()
+        ctx.closeHandleScope(scope)
       }
     }
     if (name) {

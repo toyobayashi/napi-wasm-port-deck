@@ -1168,7 +1168,7 @@ main()
 ```js file=./src/runtime.mjs 252
 ```
 
-```js file=./src/napi.mjs 256:277
+```js file=./src/napi.mjs 255:276
 ```
 
 </Step>
@@ -1178,7 +1178,7 @@ main()
 ```js file=./src/runtime.mjs 252
 ```
 
-```js file=./src/napi.mjs 273
+```js file=./src/napi.mjs 272
 ```
 
 </Step>
@@ -1188,7 +1188,7 @@ main()
 ```js file=./src/runtime.mjs 252
 ```
 
-```js file=./src/napi.mjs 222:254
+```js file=./src/napi.mjs 221:253
 ```
 
 </Step>
@@ -1198,7 +1198,7 @@ main()
 ```js file=./src/runtime.mjs 254,268:272
 ```
 
-```js file=./src/napi.mjs 236
+```js file=./src/napi.mjs 235
 ```
 
 </Step>
@@ -1208,7 +1208,7 @@ main()
 ```js file=./src/runtime.mjs 182:211
 ```
 
-```js file=./src/napi.mjs 236
+```js file=./src/napi.mjs 235
 ```
 
 </Step>
@@ -1218,7 +1218,7 @@ main()
 ```js file=./src/runtime.mjs 151:180
 ```
 
-```js file=./src/napi.mjs 236
+```js file=./src/napi.mjs 235
 ```
 
 </Step>
@@ -1228,7 +1228,7 @@ main()
 ```js file=./src/runtime.mjs 254,270
 ```
 
-```js file=./src/napi.mjs 236
+```js file=./src/napi.mjs 235
 ```
 
 </Step>
@@ -1238,7 +1238,7 @@ main()
 ```js file=./src/runtime.mjs 3:33
 ```
 
-```js file=./src/napi.mjs 236
+```js file=./src/napi.mjs 235
 ```
 
 </Step>
@@ -1248,7 +1248,7 @@ main()
 ```js file=./src/runtime.mjs 57:66
 ```
 
-```js file=./src/napi.mjs 236
+```js file=./src/napi.mjs 235
 ```
 
 </Step>
@@ -1258,7 +1258,7 @@ main()
 ```js file=./src/runtime.mjs 68:80
 ```
 
-```js file=./src/napi.mjs 236
+```js file=./src/napi.mjs 235
 ```
 
 </Step>
@@ -1268,7 +1268,7 @@ main()
 ```js file=./src/runtime.mjs 82:127
 ```
 
-```js file=./src/napi.mjs 236
+```js file=./src/napi.mjs 235
 ```
 
 </Step>
@@ -1278,7 +1278,7 @@ main()
 ```js file=./src/runtime.mjs 274:287
 ```
 
-```js file=./src/napi.mjs 237:238,249:251
+```js file=./src/napi.mjs 236:237,248:250
 ```
 
 </Step>
@@ -1288,7 +1288,7 @@ main()
 ```js file=./src/runtime.mjs 129:149
 ```
 
-```js file=./src/napi.mjs 237:238,249:251
+```js file=./src/napi.mjs 236:237,248:250
 ```
 
 </Step>
@@ -1298,7 +1298,177 @@ main()
 ```js file=./src/runtime.mjs 289:302
 ```
 
-```js file=./src/napi.mjs 240:247
+```js file=./src/napi.mjs 239:246
+```
+
+</Step>
+
+<Step subtitle="callIntoModule 调用 C 函数，检查是否有调用其他 Node API 捕获的异常需要抛出">
+
+```js file=./src/runtime.mjs 202:210
+```
+
+```js file=./src/napi.mjs 238,247
+```
+
+</Step>
+
+<Step>
+
+```js file=./src/runtime.mjs 213:250,256
+```
+
+```js file=./src/napi.mjs 8:52
+```
+
+</Step>
+
+<Step subtitle="CallbackInfo 保存原生函数的调用信息。因为函数调用是栈式的，所以没必要再为 napi_callback_info 单独准备 Store，调用原生函数时把该次调用信息保存在 CallbackInfo 里入栈，napi_get_cb_info 即可获取到最顶层的 info">
+
+```js file=./src/runtime.mjs 213:250,256
+```
+
+```js file=./src/napi.mjs 31,41
+```
+
+</Step>
+
+<Step subtitle="cb 是函数指针，通过 table 来拿到真正 wasm 函数，在 scope 中调用，通过 id 返回真正的 JS 对象">
+
+```js file=./src/runtime.mjs 213:250,256
+```
+
+```js file=./src/napi.mjs 32,34:39,42
+```
+
+</Step>
+
+<Step subtitle="为绑定函数 f 分配 handle，并把 id 写入 result 指针指向的内存中，wasm 的内存是小端序所以第三个参数传 true">
+
+```js file=./src/runtime.mjs 213:250,256
+```
+
+```js file=./src/napi.mjs 23[40:45],30,44,48:50
+```
+
+</Step>
+
+<Step>
+
+```js file=./src/runtime.mjs 213:250,256
+```
+
+```js file=./src/napi.mjs 91:123
+```
+
+</Step>
+
+<Step subtitle="napi_get_cb_info 忽略了第二个形参，每次调用这个 API 都获取调用栈顶层的调用信息">
+
+```js file=./src/runtime.mjs 213:250,256
+```
+
+```js file=./src/napi.mjs 91[35],94
+```
+
+</Step>
+
+<Step subtitle="如果传了 argv 数组地址，就把函数实参分配好 handle id 写入数组中">
+
+```js file=./src/runtime.mjs 213:250,256
+```
+
+```js file=./src/napi.mjs 96:105
+```
+
+</Step>
+
+<Step subtitle="如果数组长度超过了实参数量，剩下的坑位写入 undefined，即写入 1">
+
+```js file=./src/runtime.mjs 213:250,256
+```
+
+```js file=./src/napi.mjs 106:110
+```
+
+</Step>
+
+<Step subtitle="按需返回真正的实参数量、this 对象、用户自定义数据">
+
+```js file=./src/runtime.mjs 213:250,256
+```
+
+```js file=./src/napi.mjs 112:121
+```
+
+</Step>
+
+<Step subtitle="napi_set_named_property 设置对象属性">
+
+```js file=./src/runtime.mjs 182:211
+```
+
+```js file=./src/napi.mjs 54:72
+```
+
+</Step>
+
+<Step subtitle="napi_throw_error 抛出 JS 异常">
+
+```js file=./src/runtime.mjs 182:211
+```
+
+```js file=./src/napi.mjs 74:89
+```
+
+</Step>
+
+<Step subtitle="napi_is_array 判断数组，把结果写入 result 指针">
+
+```js file=./src/runtime.mjs 182:211
+```
+
+```js file=./src/napi.mjs 125:136
+```
+
+</Step>
+
+<Step subtitle="napi_get_array_length 获取数组长度，把结果写入 result 指针">
+
+```js file=./src/runtime.mjs 182:211
+```
+
+```js file=./src/napi.mjs 138:151
+```
+
+</Step>
+
+<Step subtitle="4 字节无符号整数互相转换">
+
+```js file=./src/runtime.mjs 182:211
+```
+
+```js file=./src/napi.mjs 153:178
+```
+
+</Step>
+
+<Step subtitle="数组元素读写">
+
+```js file=./src/runtime.mjs 182:211
+```
+
+```js file=./src/napi.mjs 180:219
+```
+
+</Step>
+
+<Step>
+
+```diff
+```
+
+```diff
 ```
 
 </Step>
@@ -1306,3 +1476,15 @@ main()
 </CodeSurferColumns>
 
 ---
+
+## 有什么意义？
+
+- 移植现有 Node-API 原生模块到 wasm 实现跨平台，npm install 避免重新编译
+
+- 把 Node-API 原生模块跑在浏览器上，而不需要使用另外的语法编写 JS 绑定
+
+---
+
+# Thank you!
+
+https://github.com/pomber/code-surfer
