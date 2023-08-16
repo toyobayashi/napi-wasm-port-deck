@@ -37,3 +37,5 @@ node-gyp rebuild
       -I"$node_include" \
       -nostdlib ./src/demo.c \
       -Wl,--import-undefined,--export-dynamic,--export-table,--no-entry
+
+em++ -g -o ./src/embind/demo.mjs -lembind ./src/embind/demo.cpp
