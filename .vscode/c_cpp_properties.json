@@ -1,13 +1,13 @@
 {
   "env": {
     "includePath": [
-      "${default}",
-      "${workspaceFolder}/node_modules/emnapi/include"
+      "${default}"
     ],
     "defines": ["NAPI_DISABLE_CPP_EXCEPTIONS", "NODE_ADDON_API_ENABLE_MAYBE"],
     "clPath": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Tools\\MSVC\\14.28.29910\\bin\\Hostx64\\x64\\cl.exe",
     "gccPath": "/usr/bin/gcc",
-    "clangPath": "/usr/bin/clang"
+    "clangPath": "/usr/bin/clang",
+    "nodeVersion": "16.15.0"
   },
   "configurations": [
     {
@@ -16,16 +16,16 @@
       "compilerPath": "${clPath}",
       "windowsSdkVersion": "10.0.19041.0",
       "intelliSenseMode": "msvc-x64",
-      "cStandard": "c99",
-      "cppStandard": "c++11",
-      "includePath": ["${includePath}"]
+      "cStandard": "c11",
+      "cppStandard": "c++17",
+      "includePath": ["${includePath}", "${env:LOCALAPPDATA}/node-gyp/Cache/${nodeVersion}/include/node"]
     },
     {
       "name": "Linux",
       "defines": ["${defines}"],
       "compilerPath": "${gccPath}",
-      "cStandard": "c99",
-      "cppStandard": "c++11",
+      "cStandard": "c11",
+      "cppStandard": "c++14",
       "intelliSenseMode": "gcc-x64",
       "browse": {
         "path": [
@@ -34,16 +34,16 @@
         "limitSymbolsToIncludedHeaders": true,
         "databaseFilename": ""
       },
-      "includePath": ["${includePath}"]
+      "includePath": ["${includePath}", "${env:HOME}/.cache/node-gyp/${nodeVersion}/include/node"]
     },
     {
       "name": "macOS",
-      "includePath": ["${includePath}"],
+      "includePath": ["${includePath}", "${env:HOME}/Library/Caches/node-gyp/${nodeVersion}/include/node"],
       "defines": ["${defines}"],
       "macFrameworkPath": ["/System/Library/Frameworks", "/Library/Frameworks"],
       "compilerPath": "${clangPath}",
-      "cStandard": "c99",
-      "cppStandard": "c++11",
+      "cStandard": "c11",
+      "cppStandard": "c++14",
       "intelliSenseMode": "${default}"
     },
     {
@@ -53,7 +53,7 @@
       "intelliSenseMode": "linux-clang-x86",
       "cStandard": "c11",
       "cppStandard": "c++17",
-      "includePath": ["${includePath}"]
+      "includePath": ["${includePath}", "${workspaceFolder}/node_modules/emnapi/include"]
     },
     {
       "name": "Win32 Emscripten",
@@ -62,7 +62,7 @@
       "intelliSenseMode": "linux-clang-x86",
       "cStandard": "c11",
       "cppStandard": "c++17",
-      "includePath": ["${includePath}"]
+      "includePath": ["${includePath}", "${workspaceFolder}/node_modules/emnapi/include"]
     },
     {
       "name": "WASI",
@@ -71,7 +71,7 @@
       "intelliSenseMode": "clang-x86",
       "cStandard": "c11",
       "cppStandard": "c++14",
-      "includePath": ["${includePath}"]
+      "includePath": ["${includePath}", "${workspaceFolder}/node_modules/emnapi/include"]
     },
     {
       "name": "WASI-THREADS",
@@ -80,7 +80,7 @@
       "intelliSenseMode": "clang-x86",
       "cStandard": "c11",
       "cppStandard": "c++14",
-      "includePath": ["${includePath}"],
+      "includePath": ["${includePath}", "${workspaceFolder}/node_modules/emnapi/include"],
       "compilerArgs": ["--target=wasm32-wasi-threads"]
     },
     {
@@ -90,7 +90,7 @@
       "intelliSenseMode": "clang-x86",
       "cStandard": "c11",
       "cppStandard": "c++14",
-      "includePath": ["${includePath}"],
+      "includePath": ["${includePath}", "${workspaceFolder}/node_modules/emnapi/include"],
       "compilerArgs": ["--target=wasm32"]
     }
   ],
